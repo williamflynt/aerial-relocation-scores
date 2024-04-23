@@ -51,3 +51,14 @@ I started listing specific colors I care about, but what if we cut the color spa
 
 I'm treating HSL like a cylinder, and slicing it radially and by luminance or saturation.
 Saturation appears to have a much better accuracy...
+
+So now I can pretty well cluster to the group - that means I have some kind of meaningful representation.
+But what about predicting a "would I live there" score?
+
+### Predicting Would-I-Live-There
+
+1. Rank each city
+2. Write into metadata
+3. Train a new KNN regression on the vectorized images
+4. Test with places I want and don't want to live
+5. Make presentation

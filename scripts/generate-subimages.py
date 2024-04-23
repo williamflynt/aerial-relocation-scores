@@ -17,13 +17,26 @@ DATA_DIR = pathlib.Path("../data")
 OUT_DIR = DATA_DIR / "subdata/"
 
 CSV_SEP = ","
-CSV_HEADERS = ["image_filename", "parent", "group"]
+CSV_HEADERS = ["image_filename", "parent", "group", "living_score"]
 CSV_OUT_PATH = OUT_DIR / "metadata.csv"
 
 # Convolution parameters.
 SUBIMAGE_SIZE = 1024
 STEP_SIZE = 512
 DOWNSAMPLE_SIZE = 128  # For memory considerations.
+
+# This is a 1-100 ranking for how much I would want to live in a place.
+LIVING_SCORE = {
+    "austin": 40,
+    "bellingham": 65,
+    "bloomington": 35,
+    "chicago": 45,
+    "innsbruck": 90,
+    "kitsap": 45,
+    "sfo": 55,
+    "tyrol": 60,
+    "vienna": 90,
+}
 
 
 def extract_parent(s: str) -> str:
@@ -67,7 +80,14 @@ def process_image(filename):
 
                     sub_img_filename = f"{image_parent}_{i}_{j}.tif"
                     sub_img.save(OUT_DIR / sub_img_filename)
-                    writer.writerow([sub_img_filename, image_parent, image_group])
+                    writer.writerow(
+                        [
+                            sub_img_filename,
+                            image_parent,
+                            image_group,
+                            LIVING_SCORE[image_group],
+                        ]
+                    )
                 count += 1
         logging.info(f"\t{count} sub-images written")
 

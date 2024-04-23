@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import LabelEncoder
 
-from model import ImageClassifier
+from vectorizer import ImageVectorizer
 
 
 from matplotlib.colors import ListedColormap
@@ -132,7 +132,7 @@ def main():
     for sub_img_filename, _, group in metadata:
         features.append(
             # Use default model params.
-            ImageClassifier.extract_features(str(OUT_DIR / sub_img_filename)).tolist()
+            ImageVectorizer.extract_features(str(OUT_DIR / sub_img_filename)).tolist()
         )
         labels.append(group)
     print("got features")
