@@ -1,1 +1,1 @@
-{"n_color_slices": 150, "sat_cut": 0.35, "n_neighbors": 3, "weights": "distance", "algorithm": "kd_tree", "leaf_size": 32, "p": 1}
+{"n_color_slices": 150, "sat_cut": 0.35, "n_neighbors": 3, "weights": "distance", "algorithm": "kd_tree", "leaf_size": 60, "p": 1}

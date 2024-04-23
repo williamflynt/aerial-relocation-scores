@@ -101,6 +101,7 @@ class ImageVectorizer:
 @cache
 def get_hue_sat(image_path: str):
     img_pil = Image.open(image_path)
+    img_pil = img_pil.convert("RGB")
 
     # Resizes image for lower features, then reshapes to one row per pixel, then normalizes from 0 to 1.
     rgb_data = np.array(img_pil.resize((HSL_DIMS, HSL_DIMS))).reshape(-1, 3) / 255.0

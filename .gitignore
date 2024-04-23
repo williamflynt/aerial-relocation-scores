@@ -4,6 +4,7 @@
 *.xml
 
 # Data
+tmp/**/*
 data/**/*
 *.7z*
 *.zip

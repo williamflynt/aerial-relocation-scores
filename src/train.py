@@ -6,6 +6,7 @@ from functools import partial
 from multiprocessing import Pool
 from typing import List, Type
 
+import joblib
 import numpy as np
 import optuna
 from sklearn.model_selection import train_test_split
@@ -38,12 +39,12 @@ def load_features(sub_img_filename, n_color_slices: int = 100, sat_cut: float = 
 
 class Trainer:
     def __init__(
-            self,
-            features_train: List[List[float]],
-            labels_train: List[str],
-            features_test: List[List[float]],
-            labels_test: List[str],
-            ModelClass: Type[ImageVectorizer | KNeighborsRegressor],
+        self,
+        features_train: List[List[float]],
+        labels_train: List[str],
+        features_test: List[List[float]],
+        labels_test: List[str],
+        ModelClass: Type[ImageVectorizer | KNeighborsRegressor],
     ):
         self.features_train = np.array(features_train)
         self.labels_train = np.array(labels_train)
@@ -76,6 +77,7 @@ def search(target: str, slice_sizes: List[int] = None, sat_cuts: List[float] = N
     assert target in ["group", "score"]
 
     ModelClass = ImageVectorizer if target == "group" else KNeighborsRegressor
+    logger.info(f"using {ModelClass.__name__} for {target}")
 
     # Load the metadata
     with open(OUT_DIR / "metadata.csv", "r") as f:
@@ -108,11 +110,16 @@ def search(target: str, slice_sizes: List[int] = None, sat_cuts: List[float] = N
             # Split the data into a training set and a test set
             features_train, features_test, labels_train, labels_test = train_test_split(
                 # Use a very limited amount of train data to control overfitting.
-                features, labels, test_size=0.85, random_state=RANDOM_STATE
+                features,
+                labels,
+                test_size=0.85,
+                random_state=RANDOM_STATE,
             )
 
             # Use optuna to find the best parameters
-            trainer = Trainer(features_train, labels_train, features_test, labels_test, ModelClass)
+            trainer = Trainer(
+                features_train, labels_train, features_test, labels_test, ModelClass
+            )
             study = optuna.create_study(direction="maximize")
             study.optimize(trainer.objective, n_trials=30)
 
@@ -144,10 +151,10 @@ def search(target: str, slice_sizes: List[int] = None, sat_cuts: List[float] = N
         f"BEST: {best_best_score} @ {best_best_params[0]}, {best_best_params[1]} slices\n\t{best_best_params[2]}"
     )
     # Train the model with the best parameters
-    model = ImageVectorizer(**(best_best_params[2]))
+    model = ModelClass(**(best_best_params[2]))
     model.fit(best_best_features, best_best_labels)
     # Save the model.
-    model.save(str(ARTIFACTS_DIR / f"model_{target}_best.joblib"))
+    joblib.dump(model, str(ARTIFACTS_DIR / f"model_{target}_best.joblib"))
     # Save the params.
     model_params = {
         "n_color_slices": best_best_params[0],
@@ -155,14 +162,14 @@ def search(target: str, slice_sizes: List[int] = None, sat_cuts: List[float] = N
         **best_best_params[2],
     }
     with open(
-            ARTIFACTS_DIR / f"model_{target}_best.params.json",
-            "w",
+        ARTIFACTS_DIR / f"model_{target}_best.params.json",
+        "w",
     ) as f:
         json.dump(model_params, f)
 
 
 if __name__ == "__main__":
-    search("group")
+    # search("group")
     with open(ARTIFACTS_DIR / "model_group_best.params.json", "r") as f:
         model_params = json.load(f)
     # Use the proven, general purpose vector features from training the classifier.
