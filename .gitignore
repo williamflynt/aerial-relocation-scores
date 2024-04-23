@@ -1,0 +1,10 @@
+# IDE
+.idea/
+*.iml
+*.xml
+
+# Data
+data/**/*
+*.7z*
+*.zip
+*.tif
