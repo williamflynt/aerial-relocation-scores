@@ -1,17 +1,14 @@
-# Geographic Precog
+# Aerial Relocation Scores
 
-Let's see if aerial imagery can predict ____.
-
-#### A Word on Memory
-
-I have 48GB of RAM, and it wasn't enough.
-To make this work I needed many GB of nVME swap... good luck!
+Let's see if I can make a general purpose aerial imagery vector,
+then use it to predict how much I want to live in a place.
 
 #### Contents
 
 1. [Python Setup](#python-setup)
 2. [Getting Raw Data](#getting-raw-data)
 3. [Generating Our Data](#generating-our-data)
+4. [Running the Analysis](#running-the-analysis)
 
 ---
 
@@ -38,10 +35,35 @@ This analysis uses the [Inria Aerial Image Labeling Dataset](https://project.inr
 
 ## Generating Our Data
 
-We're going to make little sub-tiles from our images, and associate them with other information (including parent image and image group).
+We're going to make little sub-tiles from our images, and associate them with other information (including parent image and image group and a score).
 
 ```sh
 python scripts/generate-subimages.py
 ```
 
-...
+## Running the Analysis
+
+You've got your virtual environment, installed the deps, made the data.
+
+```sh
+export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
+python src/pca.py && \
+python src/train.py && \
+python src/eval.py
+```
+
+If your results look like mine, they aren't useful.
+
+### Doing better next time
+
+Why didn't this work well?
+
+* Maybe our input data vs training data isn't the same zoom level, color space, etc...
+* I'm only extracting color distribution, not the things that actually characterize a place
+* Maybe you can't know enough "ground truth" about a place by the way it's built from overhead
+
+If I wanted to try again - better but slower - I could extract features from images like curviness of roads, angles on buildings, rooftop coloration, road size vs building size, etc...
+
+---
+
+![3D PCA](./artifacts/3d-pca-multi-angle-sparsified.png)

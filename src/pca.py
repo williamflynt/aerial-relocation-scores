@@ -12,8 +12,9 @@ from vectorizer import ImageVectorizer
 
 from matplotlib.colors import ListedColormap
 
-ARTIFACTS_DIR = pathlib.Path("../artifacts")
-DATA_DIR = pathlib.Path("../data")
+CURRENT_DIR = pathlib.Path(__file__).parent
+ARTIFACTS_DIR = CURRENT_DIR / "../artifacts"
+DATA_DIR = CURRENT_DIR / "../data"
 OUT_DIR = DATA_DIR / "subdata/"
 
 # Make a custom color map.
@@ -115,7 +116,6 @@ def plot_pca(
         cbar.ax.set_yticklabels(class_names)
 
     plt.savefig(ARTIFACTS_DIR / fig_name(n_components, multi_angle, sparsify))
-    plt.show()
 
 
 def main():
@@ -129,7 +129,7 @@ def main():
     labels: List[str] = []
 
     # Load the images and extract the features...
-    for sub_img_filename, _, group in metadata:
+    for sub_img_filename, _, group, _ in metadata:
         features.append(
             # Use default model params.
             ImageVectorizer.extract_features(str(OUT_DIR / sub_img_filename)).tolist()

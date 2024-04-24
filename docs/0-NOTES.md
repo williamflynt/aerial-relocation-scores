@@ -62,3 +62,12 @@ But what about predicting a "would I live there" score?
 3. Train a new KNN regression on the vectorized images
 4. Test with places I want and don't want to live
 5. Make presentation
+
+## 24 April 2024
+
+I implemented the evaluation with some data samples.
+
+The approach didn't work.
+It could be input data vs training data, or it could be that I'm not actually measuring the things that are important, or maybe you just can't know enough "ground truth" about a place by the way it's built from overhead (and by built... I just mean color distribution).
+
+If we wanted to try again - better - we could extract features in our image vectors like curviness of roads, angles on buildings, rooftop coloration, road size vs building size, etc...

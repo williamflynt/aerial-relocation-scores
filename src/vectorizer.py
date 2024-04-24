@@ -12,6 +12,12 @@ HSL_DIMS = 128
 
 
 class ImageVectorizer:
+    """
+    Implement a KNN model with a custom image vector, so that we
+    can attempt to create a "universal aerial image vector" that
+    could predict any kind of score with some fidelity.
+    """
+
     def __init__(
         self,
         n_neighbors: int = 3,

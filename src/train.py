@@ -14,9 +14,11 @@ from sklearn.neighbors import KNeighborsRegressor
 
 from vectorizer import ImageVectorizer
 
+
 # These paths are the same as in `../scripts/generate-subimages.py`.
-ARTIFACTS_DIR = pathlib.Path("../artifacts")
-DATA_DIR = pathlib.Path("../data")
+CURRENT_DIR = pathlib.Path(__file__).parent
+ARTIFACTS_DIR = CURRENT_DIR / "../artifacts"
+DATA_DIR = CURRENT_DIR / "../data"
 OUT_DIR = DATA_DIR / "subdata/"
 
 # Reproducibility from known data.
@@ -53,12 +55,12 @@ class Trainer:
         self.ModelClass = ModelClass
 
     def objective(self, trial: optuna.trial.Trial):
-        n_neighbors = trial.suggest_int("n_neighbors", 2, 15)
+        n_neighbors = trial.suggest_int("n_neighbors", 2, 10)
         weights = trial.suggest_categorical("weights", ["uniform", "distance"])
         algorithm = trial.suggest_categorical(
             "algorithm", ["ball_tree", "kd_tree", "brute"]
         )
-        leaf_size = trial.suggest_int("leaf_size", 5, 60)
+        leaf_size = trial.suggest_int("leaf_size", 40, 70)
         p = trial.suggest_int("p", 1, 2)  # Manhattan vs Euclidean distances.
 
         model = self.ModelClass(
@@ -86,10 +88,12 @@ def search(target: str, slice_sizes: List[int] = None, sat_cuts: List[float] = N
         metadata = list(reader)
     logger.info("got metadata")
 
-    tgt_idx = 3  # Default to "score".
-    if target == "group":
+    if target == "score":
+        tgt_idx = 3
+        labels: List[float] = [float(meta[tgt_idx]) for meta in metadata]
+    else:
         tgt_idx = 2
-    labels: List[str] = [float(meta[tgt_idx]) for meta in metadata]
+        labels: List[str] = [meta[tgt_idx] for meta in metadata]
 
     best_best_params = [-1, -1, dict()]
     best_best_score = -1
@@ -124,8 +128,14 @@ def search(target: str, slice_sizes: List[int] = None, sat_cuts: List[float] = N
             study.optimize(trainer.objective, n_trials=30)
 
             # Plot optimization history
-            # fig = optuna.visualization.plot_optimization_history(study)
-            # fig.show()
+            fig = optuna.visualization.plot_optimization_history(study)
+            try:
+                fig.write_image(
+                    ARTIFACTS_DIR / f"plot_optimization_history_{target}.png"
+                )
+            except ValueError:
+                logger.warning("kaleido failure - not saving image")
+                fig.show()
 
             # Plot parameter importance
             # fig = optuna.visualization.plot_param_importances(study)
@@ -169,7 +179,7 @@ def search(target: str, slice_sizes: List[int] = None, sat_cuts: List[float] = N
 
 
 if __name__ == "__main__":
-    # search("group")
+    search("group", [150], [0.35])
     with open(ARTIFACTS_DIR / "model_group_best.params.json", "r") as f:
         model_params = json.load(f)
     # Use the proven, general purpose vector features from training the classifier.

@@ -5,6 +5,7 @@ import re
 
 import joblib
 from PIL import Image
+from sklearn.metrics import root_mean_squared_error
 from sklearn.neighbors import KNeighborsRegressor
 
 from src.vectorizer import ImageVectorizer
@@ -24,9 +25,11 @@ SUBIMAGE_SIZE = 128
 STEP_SIZE = 128
 DOWNSAMPLE_SIZE = 128
 
-ARTIFACTS_DIR = pathlib.Path("../artifacts")
-SAMPLES_DIR = pathlib.Path("../data/samples/")
-TMP_DIR = pathlib.Path("../tmp/")
+CURRENT_DIR = pathlib.Path(__file__).parent
+ARTIFACTS_DIR = CURRENT_DIR / "../artifacts"
+DATA_DIR = CURRENT_DIR / "../data"
+SAMPLES_DIR = DATA_DIR / "samples"
+TMP_DIR = CURRENT_DIR / "../tmp"
 
 
 def extract_parent(s: str) -> str:
@@ -114,4 +117,10 @@ if __name__ == "__main__":
         print(
             f"{superfluous_unicode} {city:16} : {score:.1f} (y_true: {SAMPLE_SCORES[city]}) (error: {err:.1f})"
         )
+    print("***")
+
+    y_true = [x[1] for x in table]
+    y_pred = [SAMPLE_SCORES[x[0]] for x in table]
+    total_err = root_mean_squared_error(y_true, y_pred)
+    print(f"TOTAL RMSE: {total_err:.2f}")
     print("***")
