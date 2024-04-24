@@ -50,7 +50,7 @@ def process_image(
         image_group = extract_group(current_image)
         city_score = SAMPLE_SCORES[image_group]
         logging.info(f"predicting for {image_group}...")
-        logging.info(f"TARGET: {city_score:.1f}")
+        logging.debug(f"TARGET: {city_score:.1f}")
 
         remainder_width = width % STEP_SIZE
         remainder_height = height % STEP_SIZE
@@ -84,12 +84,12 @@ def process_image(
                         )[0]
                     )
 
-        logging.info(f"\t{len(filenames)} sub-images predicted")
+        logging.debug(f"\t{len(filenames)} sub-images predicted")
         for idx, fn in enumerate(filenames):
-            logging.info(f"\t{os.path.basename(fn)} - {scores[idx]:.1f}")
+            logging.debug(f"\t{os.path.basename(fn)} - {scores[idx]:.1f}")
         agg_score = sum(scores) / len(scores)
-        logging.info(f"\tAGGREGATED: {agg_score:.1f}")
-        logging.info(f"\tERROR: {city_score - agg_score:.1f}")
+        logging.debug(f"\tAGGREGATED: {agg_score:.1f}")
+        logging.debug(f"\tERROR: {city_score - agg_score:.1f}")
 
         return image_group, agg_score
     return "", -100
@@ -97,11 +97,21 @@ def process_image(
 
 if __name__ == "__main__":
     model = joblib.load(ARTIFACTS_DIR / "model_score_best.joblib")
-    logging.info(f"using {model.__class__.__name__}")
+    logging.debug(f"using {model.__class__.__name__}")
     table = []
     for dirpath, _, filenames in os.walk(SAMPLES_DIR):
         for filename in filenames:
-            table.append(process_image(os.path.join(dirpath, filename), model))
+            results = process_image(os.path.join(dirpath, filename), model)
+            if results[0] == "":
+                continue
+            table.append(results)
+
     print("\n***")
-    for city, score in sorted(table, key=lambda x: x[0]):
-        print(f"{city:12} : {int(score)}")
+    # Sort by descending target score.
+    for city, score in sorted(table, key=lambda x: SAMPLE_SCORES[x[0]], reverse=True):
+        err = abs(SAMPLE_SCORES[city] - score)
+        superfluous_unicode = "\u2705" if err <= 10 else "\u274c"
+        print(
+            f"{superfluous_unicode} {city:16} : {score:.1f} (y_true: {SAMPLE_SCORES[city]}) (error: {err:.1f})"
+        )
+    print("***")
