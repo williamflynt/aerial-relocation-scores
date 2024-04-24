@@ -12,6 +12,10 @@ then use it to predict how much I want to live in a place.
 
 ---
 
+![Results](./artifacts/y_pred_results.png)
+
+---
+
 ## Python Setup
 
 This project uses Python 3.12, but it would probably work with other versions of Python 3.
